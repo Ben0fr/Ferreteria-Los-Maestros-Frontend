@@ -2,27 +2,22 @@ import { useState } from 'react'
 import { comunasPorRegion } from '../../data/productos'
 import { validarCorreo, validarRun, validarClave } from '../../utils/validaciones'
 
-// Valores iniciales (vacíos) del formulario
 const formularioVacio = {
     run: "", nombre: "", apellidos: "", correo: "", clave: "", fecha: "",
     tipo: "", region: "", comuna: "", direccion: ""
 }
 
-// Formulario para crear un usuario desde el panel de administración
 const UserForm = ({ onGuardar }) => {
     const [datos, setDatos] = useState(formularioVacio)
 
-    // Actualiza el campo que el usuario está escribiendo
     const manejarCambio = (e) => {
         setDatos({ ...datos, [e.target.name]: e.target.value })
     }
 
-    // Al cambiar la región, se limpia la comuna (porque cada región tiene sus comunas)
     const manejarRegion = (e) => {
         setDatos({ ...datos, region: e.target.value, comuna: "" })
     }
 
-    // Valida los datos y, si están bien, los entrega a la página para guardarlos en el backend
     const manejarEnvio = async (e) => {
         e.preventDefault()
 
@@ -50,7 +45,6 @@ const UserForm = ({ onGuardar }) => {
             return
         }
 
-        // La página responde true si el backend aceptó los datos; solo entonces se limpia el formulario
         const guardado = await onGuardar({
             run: datos.run.trim(),
             nombre: datos.nombre.trim(),

@@ -4,7 +4,6 @@ import { useSelectorCantidad } from '../utils/useSelectorCantidad'
 import { useCarga } from '../utils/useCarga'
 import { formatearPrecio } from '../utils/validaciones'
 
-// Contenido del detalle cuando el producto existe (separado para poder usar el selector de cantidad)
 const DetalleContenido = ({ producto }) => {
     const { texto, maximo, enCarrito, manejarCambio, manejarBlur, agregar } = useSelectorCantidad(producto)
     const todoEnCarrito = producto.stock > 0 && maximo === 0
@@ -47,10 +46,8 @@ const DetalleContenido = ({ producto }) => {
     )
 }
 
-// Detalle de un producto (el id viene en la dirección: /productos/3)
 const DetalleProducto = () => {
     const { id } = useParams()
-    // El producto se pide a productos-service; si el id no existe el servicio responde 404 y llega undefined
     const { datos: producto, cargando, error } = useCarga(() => buscarProductoPorId(Number(id)), [id])
 
     return (
@@ -62,7 +59,6 @@ const DetalleProducto = () => {
             ) : cargando ? (
                 <div className="alert alert-info">Cargando producto...</div>
             ) : producto === undefined ? (
-                // Si el id no existe, se muestra un mensaje de error
                 <div className="alert alert-danger">Producto no encontrado</div>
             ) : (
                 <DetalleContenido producto={producto} />

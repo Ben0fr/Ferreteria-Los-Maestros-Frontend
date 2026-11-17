@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { validarCorreo } from '../utils/validaciones'
+import { enviarMensaje } from '../servicios/contenido'
+import { mensajeError } from '../utils/errores'
 
-// Página de contacto con formulario validado
 const Contacto = () => {
     const [nombre, setNombre] = useState('')
     const [email, setEmail] = useState('')
     const [comentario, setComentario] = useState('')
     const [errores, setErrores] = useState({})
     const [enviado, setEnviado] = useState(false)
+    const [enviando, setEnviando] = useState(false)
+    const [errorEnvio, setErrorEnvio] = useState('')
 
-    // Valida el formulario; si todo está bien, muestra el mensaje de éxito y limpia los campos
-    const manejarEnvio = (e) => {
+    const manejarEnvio = async (e) => {
         e.preventDefault()
         setEnviado(false)
+        setErrorEnvio('')
 
         const nuevosErrores = {}
 
@@ -42,10 +45,19 @@ const Contacto = () => {
             return
         }
 
-        setEnviado(true)
-        setNombre('')
-        setEmail('')
-        setComentario('')
+        setEnviando(true)
+
+        try {
+            await enviarMensaje({ nombre: nombre.trim(), correo: email.trim(), comentario: comentario.trim() })
+            setEnviado(true)
+            setNombre('')
+            setEmail('')
+            setComentario('')
+        } catch (error) {
+            setErrorEnvio(mensajeError(error))
+        } finally {
+            setEnviando(false)
+        }
     }
 
     return (
@@ -88,8 +100,11 @@ const Contacto = () => {
                                 {enviado && (
                                     <div className="alert alert-success">Mensaje enviado correctamente.</div>
                                 )}
+                                {errorEnvio !== '' && <div className="alert alert-danger">{errorEnvio}</div>}
 
-                                <button type="submit" className="btn btn-primary w-100">Enviar mensaje</button>
+                                <button type="submit" className="btn btn-primary w-100" disabled={enviando}>
+                                    {enviando ? 'Enviando...' : 'Enviar mensaje'}
+                                </button>
                             </form>
                         </div>
                     </div>

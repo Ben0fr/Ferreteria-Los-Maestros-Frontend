@@ -1,4 +1,3 @@
-// Convierte un error de axios en un texto para mostrar al usuario
 export function mensajeError(error) {
     if (error.response?.data?.message) {
         return error.response.data.message

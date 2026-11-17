@@ -1,4 +1,3 @@
-// Tests de componentes: ProductoCard, Navbar y contexto de sesión (Vitest)
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -9,7 +8,6 @@ import { useSesion } from '../context/useSesion'
 import { guardarSesion, obtenerUsuarioActual } from '../servicios/almacenSesion'
 import { perfil } from '../servicios/auth'
 
-// El backend se simula: estos tests no necesitan que usuarios-service esté encendido
 vi.mock('../servicios/auth', () => ({ login: vi.fn(), registrar: vi.fn(), perfil: vi.fn() }))
 
 const producto = {
@@ -58,14 +56,11 @@ describe('SesionProvider (contexto)', () => {
         perfil.mockResolvedValue({ id: 9, nombre: 'Luis', rol: 'CLIENTE', tipo: 'Cliente' })
     })
 
-    // Componente de prueba que usa el hook useSesion
     const Consumidor = () => {
         const { usuario } = useSesion()
         return <span>{usuario === null ? 'sin sesion' : 'usuario: ' + usuario.nombre}</span>
     }
 
-    // Persistencia: al "recargar la página" (montar de nuevo) la sesión guardada se recupera
-    // y además se verifica con el backend (GET /auth/me)
     it('recupera la sesión guardada al montarse y la verifica con el backend', async () => {
         guardarSesion({ accessToken: 'a', refreshToken: 'r', usuario: { nombre: 'Luis' } })
         render(<SesionProvider><Consumidor /></SesionProvider>)

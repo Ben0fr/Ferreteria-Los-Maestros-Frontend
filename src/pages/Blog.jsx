@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
-import { articulosBlog } from '../data/blog'
+import { listarArticulos } from '../servicios/contenido'
+import { useCarga } from '../utils/useCarga'
 
-// Lista de artículos del blog
 const Blog = () => {
+    const { datos: articulos, cargando, error } = useCarga(() => listarArticulos())
+
     return (
         <>
             <div className="hero-ferreteria mb-5">
@@ -13,13 +15,16 @@ const Blog = () => {
             </div>
 
             <main className="container mb-5">
+                {error !== '' && <div className="alert alert-danger">{error}</div>}
+                {cargando && articulos === null && <div className="alert alert-info">Cargando artículos...</div>}
+
                 <div className="row">
-                    {articulosBlog.map((articulo) => (
-                        <div className="col-md-6" key={articulo.id}>
+                    {(articulos ?? []).map((articulo) => (
+                        <div className="col-md-6 mb-4" key={articulo.id}>
                             <div className="card h-100">
-                                <img src={articulo.imagen} className="card-img-top" alt={articulo.altCard} />
+                                <img src={articulo.imagen} className="card-img-top" alt={articulo.imagenAlt} />
                                 <div className="card-body d-flex flex-column">
-                                    <h5 className="card-title">{articulo.tituloCard}</h5>
+                                    <h5 className="card-title">{articulo.titulo}</h5>
                                     <p className="card-text">{articulo.resumen}</p>
                                     <Link to={`/blog/${articulo.id}`} className="btn btn-primary mt-auto">Leer más</Link>
                                 </div>

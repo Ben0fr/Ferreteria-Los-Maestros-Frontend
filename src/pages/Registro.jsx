@@ -4,7 +4,6 @@ import { registrar } from '../servicios/auth'
 import { validarCorreo, validarClave } from '../utils/validaciones'
 import { mensajeError } from '../utils/errores'
 
-// Página para crear una cuenta nueva
 const Registro = () => {
     const [nombre, setNombre] = useState('')
     const [email, setEmail] = useState('')
@@ -13,8 +12,6 @@ const Registro = () => {
     const [errores, setErrores] = useState({})
 
     const navigate = useNavigate()
-
-    // Valida todos los campos y, si están bien, crea la cuenta en el backend (POST /auth/registro)
     const manejarEnvio = async (e) => {
         e.preventDefault()
 
@@ -46,7 +43,6 @@ const Registro = () => {
             alert("Cuenta creada con éxito. Ahora inicia sesión.")
             navigate('/login')
         } catch (error) {
-            // 409 = el correo ya existe; otros errores (400, servidor apagado) muestran el mensaje del backend
             setErrores({ email: mensajeError(error) })
         }
     }

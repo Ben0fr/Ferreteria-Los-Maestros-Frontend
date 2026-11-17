@@ -6,15 +6,13 @@ import {
 } from '../servicios/tienda'
 import { formatearPrecio } from '../utils/validaciones'
 import { useSesion } from '../context/useSesion'
+import { ROL_CLIENTE } from '../utils/roles'
 import { useCarga } from '../utils/useCarga'
 
-// Selector de cantidad de un producto del carrito: se puede borrar y escribir de nuevo,
-// no deja superar el stock y, si queda en 0, el producto se elimina del carrito
 const CantidadCarrito = ({ producto, cantidad, onCambiar }) => {
     const [texto, setTexto] = useState(String(cantidad))
     const [aviso, setAviso] = useState("")
 
-    // Si la cantidad cambia desde afuera, se sincroniza el campo
     useEffect(() => {
         setTexto(String(cantidad))
     }, [cantidad])
@@ -42,7 +40,6 @@ const CantidadCarrito = ({ producto, cantidad, onCambiar }) => {
         onCambiar(producto.id, valor)
     }
 
-    // Si deja el campo vacío, vuelve a la cantidad que tenía el carrito
     const manejarBlur = () => {
         if (texto === "") setTexto(String(cantidad))
     }
@@ -67,34 +64,29 @@ const CantidadCarrito = ({ producto, cantidad, onCambiar }) => {
     )
 }
 
-// Carrito de compras (se guarda en localStorage, así no se pierde al recargar).
-// Los precios y el stock de cada producto se consultan a productos-service.
 const Carrito = () => {
     const [carrito, setCarrito] = useState(() => obtenerCarrito())
     const { datos: catalogo, cargando, error, recargar } = useCarga(() => obtenerProductos())
     const [comprando, setComprando] = useState(false)
     const [avisoSesion, setAvisoSesion] = useState(false)
     const { usuario } = useSesion()
+    const [direccion, setDireccion] = useState(usuario?.direccion ?? "")
     const navigate = useNavigate()
 
-    // Quita un producto del carrito
     const manejarEliminar = (id) => {
         setCarrito(eliminarDelCarrito(id))
     }
 
-    // Cambia la cantidad de un producto (si queda en 0 se elimina; nunca supera el stock)
     const manejarCambiarCantidad = (id, cantidad) => {
         const producto = (catalogo ?? []).find((p) => p.id === id)
         setCarrito(actualizarCantidadCarrito(id, cantidad, producto?.stock).carrito)
     }
 
-    // Vacía todo el carrito
     const manejarVaciar = () => {
         vaciarCarrito()
         setCarrito([])
     }
 
-    // Intenta confirmar la compra; si no hay sesión, muestra un aviso con acceso directo al login
     const manejarComprar = async () => {
         if (usuario === null) {
             setAvisoSesion(true)
@@ -103,30 +95,27 @@ const Carrito = () => {
 
         setAvisoSesion(false)
         setComprando(true)
-        const resultado = await realizarCompra()
+        const nombreCompleto = (usuario.nombre + " " + (usuario.apellidos ?? "")).trim()
+        const resultado = await realizarCompra({ nombre: nombreCompleto, direccion })
         setComprando(false)
 
         if (!resultado.ok) {
             alert(resultado.mensaje)
-            // Si se alcanzó a descontar algo, se actualiza el carrito y el stock que se ve en pantalla
-            setCarrito(obtenerCarrito())
             recargar()
             return
         }
 
         alert(resultado.mensaje)
         setCarrito([])
-        navigate('/productos')
+        navigate(usuario.rol === ROL_CLIENTE ? '/mis-ordenes' : '/productos')
     }
 
-    // Une cada item del carrito con los datos del producto y calcula su subtotal
     const items = []
     let total = 0
 
     for (const item of carrito) {
         const producto = (catalogo ?? []).find((p) => p.id === item.id)
 
-        // Si el producto ya no existe en la tienda (o aún no se cargó), se omite
         if (producto === undefined) {
             continue
         }
@@ -186,6 +175,15 @@ const Carrito = () => {
             <div className="card mt-4 resumen-carrito">
                 <div className="card-body">
                     <h3>total: $<span id="total-carrito">{formatearPrecio(total)}</span></h3>
+
+                    {/* La orden necesita una dirección de entrega */}
+                    <div className="mb-3">
+                        <label htmlFor="carrito-direccion" className="form-label">Dirección de entrega</label>
+                        <input type="text" id="carrito-direccion" className="form-control" maxLength={200}
+                               placeholder="Calle, número y comuna" value={direccion}
+                               onChange={(e) => setDireccion(e.target.value)} />
+                    </div>
+
                     <div className="d-flex justify-content-end gap-2">
                         <button className="btn btn-danger" onClick={manejarVaciar}>Vaciar Carrito</button>
                         <button className="btn btn-success" onClick={manejarComprar} disabled={items.length === 0 || comprando}>

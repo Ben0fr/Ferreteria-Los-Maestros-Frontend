@@ -1,8 +1,5 @@
-// Agrega los matchers del DOM (toBeInTheDocument, toHaveValue, etc.)
 import '@testing-library/jest-dom'
 
-// Node 25+ trae un localStorage experimental que, sin el flag --localstorage-file, queda undefined
-// y tapa al localStorage de jsdom. Si pasa eso, se usa uno simple en memoria (en Node LTS no hace nada).
 class MemoriaStorage {
     #datos = new Map()
     get length() { return this.#datos.size }

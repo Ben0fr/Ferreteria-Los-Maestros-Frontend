@@ -3,8 +3,10 @@ import { leerSesion, guardarSesion, borrarSesion, EVENTO_SESION_EXPIRADA } from 
 
 export const URL_USUARIOS = import.meta.env.VITE_API_USUARIOS_URL ?? 'http://localhost:8081/api/v1'
 export const URL_PRODUCTOS = import.meta.env.VITE_API_PRODUCTOS_URL ?? 'http://localhost:8082/api/v1'
+export const URL_ORDENES = import.meta.env.VITE_API_ORDENES_URL ?? 'http://localhost:8083/api/v1'
+export const URL_CONTENIDO = import.meta.env.VITE_API_CONTENIDO_URL ?? 'http://localhost:8084/api/v1'
+export const URL_INVENTARIO = import.meta.env.VITE_API_INVENTARIO_URL ?? 'http://localhost:8085/api/v1'
 
-// Rutas que no necesitan token (ni se reintentan con refresh)
 const RUTAS_PUBLICAS = ['/auth/login', '/auth/registro', '/auth/refresh']
 const esPublica = (url) => RUTAS_PUBLICAS.some((ruta) => url?.startsWith(ruta))
 
@@ -13,14 +15,8 @@ function cerrarPorExpiracion() {
     window.dispatchEvent(new Event(EVENTO_SESION_EXPIRADA))
 }
 
-// Si varias peticiones fallan a la vez con 401, se renueva el token una sola vez
-// (la variable es común a todos los clientes: el refresh siempre se pide a usuarios-service)
 let renovacionEnCurso = null
 
-// Crea un cliente axios para un microservicio. Todos comparten la misma sesión y el mismo manejo de JWT:
-// 1) Antes de cada petición: agrega "Authorization: Bearer <accessToken>"
-// 2) Después de cada respuesta: si el access token venció (401), pide uno nuevo con el refresh token
-//    y repite la petición original. Si no se puede renovar, cierra la sesión.
 function crearCliente(baseURL) {
     const cliente = axios.create({
         baseURL,
@@ -55,7 +51,6 @@ function crearCliente(baseURL) {
 
             try {
                 if (renovacionEnCurso === null) {
-                    // Se usa axios "a secas" (no un cliente) para no volver a pasar por estos interceptores
                     renovacionEnCurso = axios
                         .post(URL_USUARIOS + '/auth/refresh', { refreshToken: sesion.refreshToken })
                         .then((respuesta) => respuesta.data)
@@ -81,8 +76,12 @@ function crearCliente(baseURL) {
     return cliente
 }
 
-// Cliente para usuarios-service (puerto 8081)
 export const api = crearCliente(URL_USUARIOS)
 
-// Cliente para productos-service (puerto 8082)
 export const apiProductos = crearCliente(URL_PRODUCTOS)
+
+export const apiOrdenes = crearCliente(URL_ORDENES)
+
+export const apiContenido = crearCliente(URL_CONTENIDO)
+
+export const apiInventario = crearCliente(URL_INVENTARIO)

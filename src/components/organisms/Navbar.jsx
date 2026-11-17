@@ -3,21 +3,18 @@ import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { Navbar, Nav, Container, Button } from 'react-bootstrap'
 import { useSesion } from '../../context/useSesion'
 import { obtenerCantidadCarrito, suscribirCarrito } from '../../servicios/tienda'
-import { ROL_ADMIN, ROL_VENDEDOR } from '../../utils/roles'
+import { ROL_ADMIN, ROL_VENDEDOR, ROL_CLIENTE } from '../../utils/roles'
 
-// Menú superior de la tienda. Cambia según haya o no un usuario con sesión iniciada
 const NavigationBar = () => {
     const { usuario, cerrarSesion } = useSesion()
     const navigate = useNavigate()
     const [cantidadCarrito, setCantidadCarrito] = useState(() => obtenerCantidadCarrito())
 
-    // Se mantiene al día con los cambios del carrito (agregar, eliminar, comprar), vengan de donde vengan
     useEffect(() => {
         const actualizar = () => setCantidadCarrito(obtenerCantidadCarrito())
         return suscribirCarrito(actualizar)
     }, [])
 
-    // Cierra la sesión y lleva al usuario al inicio
     const manejarCerrarSesion = () => {
         cerrarSesion()
         navigate('/')
@@ -60,6 +57,13 @@ const NavigationBar = () => {
                         ) : (
                             <>
                                 {/* Con sesión: saludo, acceso al panel según el rol y botón para cerrar sesión */}
+                                {usuario.rol === ROL_CLIENTE && (
+                                    <Nav.Item className="ms-lg-2 mt-2 mt-lg-0">
+                                        <Button variant="outline-secondary" size="sm" as={Link} to="/mis-ordenes">
+                                            Mis órdenes
+                                        </Button>
+                                    </Nav.Item>
+                                )}
                                 {usuario.rol === ROL_VENDEDOR && (
                                     <Nav.Item className="ms-lg-2 mt-2 mt-lg-0">
                                         <Button variant="outline-secondary" size="sm" as={Link} to="/vendedor">

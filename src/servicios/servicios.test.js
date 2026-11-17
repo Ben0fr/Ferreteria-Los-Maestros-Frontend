@@ -1,15 +1,17 @@
-// Tests de servicios - Integración HTTP con JWT y lógica de negocio de la compra (Vitest)
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { api, apiProductos } from './api'
 import { guardarSesion } from './almacenSesion'
 import { agregarAlCarrito, agregarAlCarritoValidado, obtenerCarrito, realizarCompra } from './tienda'
-import { listarProductos, obtenerProducto, descontarStock } from './productos'
+import { listarProductos, obtenerProducto } from './productos'
+import { crearOrden } from './ordenes'
 
-// productos-service se simula: estos tests de la tienda no necesitan el backend encendido
 vi.mock('./productos', () => ({
     listarProductos: vi.fn(),
-    obtenerProducto: vi.fn(),
-    descontarStock: vi.fn()
+    obtenerProducto: vi.fn()
+}))
+
+vi.mock('./ordenes', () => ({
+    crearOrden: vi.fn()
 }))
 
 const martillo = { id: 1, codigo: 'MAR001', nombre: 'Martillo Carpintero', precio: 6990, stock: 25 }
@@ -25,7 +27,6 @@ describe('servicios/api (axios + JWT)', () => {
         apiProductos.defaults.adapter = adaptadorProductos
     })
 
-    // Se reemplaza el "adapter" de axios para capturar la petición sin salir a la red
     it('envía el accessToken guardado en la cabecera Authorization de cada petición', async () => {
         guardarSesion({ accessToken: 'token-de-prueba', refreshToken: 'r', usuario: { nombre: 'Ana' } })
 
@@ -70,7 +71,7 @@ describe('servicios/api (axios + JWT)', () => {
     })
 })
 
-describe('servicios/tienda - compra (con productos-service simulado)', () => {
+describe('servicios/tienda - compra (con productos-service y ordenes-service simulados)', () => {
     beforeEach(() => {
         localStorage.clear()
         listarProductos.mockResolvedValue([martillo, cemento])
@@ -79,40 +80,41 @@ describe('servicios/tienda - compra (con productos-service simulado)', () => {
             if (!producto) throw { response: { status: 404, data: { message: 'Producto no encontrado' } } }
             return producto
         })
-        descontarStock.mockResolvedValue({})
+        crearOrden.mockResolvedValue({ id: 7 })
     })
 
-    it('realizarCompra falla y no descuenta nada si no hay stock suficiente', async () => {
-        agregarAlCarrito(1, 999)
-        const resultado = await realizarCompra()
-        expect(resultado.ok).toBe(false)
-        expect(resultado.mensaje).toContain('Martillo Carpintero')
-        expect(descontarStock).not.toHaveBeenCalled()
-        expect(obtenerCarrito().length).toBe(1)
-    })
-
-    it('realizarCompra descuenta cada producto en el backend y vacía el carrito', async () => {
+    it('realizarCompra envía la orden al backend (solo ids y cantidades, sin precios) y vacía el carrito', async () => {
         agregarAlCarrito(1, 2)
         agregarAlCarrito(3, 1)
-        const resultado = await realizarCompra()
+        const resultado = await realizarCompra({ nombre: 'Ana Soto', direccion: ' Calle 1, La Serena ' })
         expect(resultado.ok).toBe(true)
-        expect(descontarStock).toHaveBeenCalledWith(1, 2)
-        expect(descontarStock).toHaveBeenCalledWith(3, 1)
+        expect(resultado.mensaje).toContain('N° 7')
+        expect(crearOrden).toHaveBeenCalledWith({
+            clienteNombre: 'Ana Soto',
+            direccionEntrega: 'Calle 1, La Serena',
+            items: [{ productoId: 1, cantidad: 2 }, { productoId: 3, cantidad: 1 }]
+        })
         expect(obtenerCarrito()).toEqual([])
     })
 
-    it('si el backend falla a mitad de la compra, lo ya descontado sale del carrito (no se descuenta dos veces)', async () => {
-        agregarAlCarrito(1, 2)
-        agregarAlCarrito(3, 1)
-        descontarStock
-            .mockResolvedValueOnce({})
-            .mockRejectedValueOnce({ response: { status: 409, data: { message: 'No hay stock suficiente' } } })
+    it('si el backend rechaza la orden (sin stock), muestra su mensaje y NO vacía el carrito', async () => {
+        agregarAlCarrito(1, 999)
+        crearOrden.mockRejectedValueOnce({ response: { status: 409, data: { message: 'No hay stock suficiente de Martillo Carpintero' } } })
 
-        const resultado = await realizarCompra()
+        const resultado = await realizarCompra({ nombre: 'Ana', direccion: 'Calle 1' })
 
         expect(resultado.ok).toBe(false)
-        expect(resultado.mensaje).toBe('No hay stock suficiente')
-        expect(obtenerCarrito()).toEqual([{ id: 3, cantidad: 1 }])
+        expect(resultado.mensaje).toBe('No hay stock suficiente de Martillo Carpintero')
+        expect(obtenerCarrito()).toEqual([{ id: 1, cantidad: 999 }])
+    })
+
+    it('realizarCompra exige la dirección de entrega y no llama al backend sin ella', async () => {
+        agregarAlCarrito(1, 1)
+
+        const resultado = await realizarCompra({ nombre: 'Ana', direccion: '   ' })
+
+        expect(resultado).toEqual({ ok: false, mensaje: 'Ingresa la dirección de entrega' })
+        expect(crearOrden).not.toHaveBeenCalled()
     })
 
     it('agregarAlCarritoValidado no deja superar el stock que informa el backend', async () => {

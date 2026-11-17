@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 
-// Pie de página con la información de la ferretería y enlaces rápidos
 const Footer = () => {
     return (
         <footer className="footer-ferreteria mt-5">

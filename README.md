@@ -50,3 +50,18 @@ Permisos de productos (los aplica el backend; el frontend además oculta las pan
 El carrito sigue guardándose en localStorage; la compra descuenta el stock en `productos-service` producto por producto.
 
 Pendiente de conectar: órdenes (ordenes-service). Hoy la pantalla de órdenes del vendedor es un aviso.
+
+## Conexión con los 5 microservicios
+| Servicio | Puerto | Cliente (`servicios/api.js`) | Archivo de llamadas | Pantallas |
+|---|---|---|---|---|
+| usuarios | 8081 | `api` | `auth.js`, `usuarios.js` | Login, Registro, Admin → Usuarios |
+| productos | 8082 | `apiProductos` | `productos.js`, `tienda.js` | Catálogo, Detalle, Admin → Productos, Vendedor → Productos |
+| ordenes | 8083 | `apiOrdenes` | `ordenes.js` | Carrito (compra), Mis órdenes, Vendedor → Órdenes, Admin → Órdenes |
+| contenido | 8084 | `apiContenido` | `contenido.js` | Blog, Contacto, Admin → Mensajes |
+| inventario | 8085 | `apiInventario` | `inventario.js` | Admin → Inventario |
+
+Todos los clientes agregan el JWT y renuevan la sesión solos (ver `servicios/api.js`). Las URLs se pueden cambiar con las variables de `.env.example`.
+
+**Flujo de compra:** el carrito sigue en localStorage; al confirmar, `tienda.realizarCompra` envía `POST /ordenes` (solo ids, cantidades y dirección). `ordenes-service` valida el stock, toma los precios de productos, descuenta el stock y guarda la orden. El front ya no descuenta stock por su cuenta.
+
+**Pantallas por rol:** cliente → tienda y "Mis órdenes"; vendedor → `/vendedor` (productos y órdenes, solo lectura); administrador → `/admin` (usuarios, productos, órdenes con cambio de estado, inventario y mensajes). Las rutas se protegen en `App.jsx` (`RutaProtegida`) y cada backend aplica los permisos reales con el JWT.
