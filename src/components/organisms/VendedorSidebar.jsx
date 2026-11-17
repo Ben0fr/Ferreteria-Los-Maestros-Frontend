@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom'
 
-// Menú lateral del vendedor: solo muestra lo que su rol puede ver (productos y órdenes)
 const VendedorSidebar = () => {
     const claseLink = ({ isActive }) => 'nav-link admin-link ' + (isActive ? 'admin-link-activo' : '')
 

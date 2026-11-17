@@ -4,7 +4,6 @@ import { obtenerProductos } from '../servicios/tienda'
 import { formatearPrecio } from '../utils/validaciones'
 import { useCarga } from '../utils/useCarga'
 
-// El vendedor solo puede VER los productos: no hay botones para crear, editar ni eliminar
 const VendedorProductos = () => {
     const { datos, cargando, error } = useCarga(() => obtenerProductos())
     const productos = datos ?? []

@@ -6,7 +6,6 @@ import { mensajeError } from '../utils/errores'
 import { rutaInicial } from '../utils/roles'
 import { useSesion } from '../context/useSesion'
 
-// Página de inicio de sesión: valida los datos y llama al backend (POST /auth/login)
 const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -38,11 +37,9 @@ const Login = () => {
         setEnviando(true)
 
         try {
-            // El backend valida la clave y responde con los tokens y el usuario (con su rol)
             const sesion = await login(email.trim(), password)
             iniciarSesion(sesion)
             alert("Bienvenido, " + sesion.usuario.nombre)
-            // Cada rol entra a su propia pantalla: admin -> /admin, vendedor -> /vendedor, cliente -> /
             navigate(rutaInicial(sesion.usuario.rol))
         } catch (error) {
             const credencialesMalas = error.response?.status === 401

@@ -1,10 +1,10 @@
 import { Link, useParams } from 'react-router-dom'
-import { articulosBlog } from '../data/blog'
+import { obtenerArticulo } from '../servicios/contenido'
+import { useCarga } from '../utils/useCarga'
 
-// Artículo completo del blog (el id viene en la dirección: /blog/1)
 const DetalleBlog = () => {
     const { id } = useParams()
-    const articulo = articulosBlog.find((a) => a.id === Number(id))
+    const { datos: articulo, cargando, error } = useCarga(() => obtenerArticulo(id), [id])
 
     return (
         <main className="container mt-5 mb-5">
@@ -12,13 +12,13 @@ const DetalleBlog = () => {
                 <div className="col-lg-8">
                     <Link to="/blog" className="btn btn-outline-secondary mb-4">← Volver al Blog</Link>
 
-                    {articulo === undefined ? (
-                        // Si el artículo no existe, se muestra un mensaje
-                        <div className="alert alert-danger">Artículo no encontrado</div>
-                    ) : (
+                    {cargando && articulo === null && error === '' && <div className="alert alert-info">Cargando artículo...</div>}
+                    {error !== '' && <div className="alert alert-danger">{error}</div>}
+
+                    {articulo !== null && (
                         <>
                             <h1 className="mb-4">{articulo.titulo}</h1>
-                            <img src={articulo.imagen} className="img-fluid rounded mb-4" alt={articulo.altDetalle} />
+                            <img src={articulo.imagen} className="img-fluid rounded mb-4" alt={articulo.imagenAlt} />
                             {articulo.parrafos.map((parrafo, i) => (
                                 <p key={i}>{parrafo}</p>
                             ))}

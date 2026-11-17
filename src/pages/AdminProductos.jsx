@@ -8,13 +8,10 @@ import { formatearPrecio } from '../utils/validaciones'
 import { mensajeError } from '../utils/errores'
 import { useCarga } from '../utils/useCarga'
 
-// Valores iniciales (vacíos) del formulario de producto
 const formularioVacio = {
     codigo: "", nombre: "", descripcion: "", precio: "", stock: "", stockCritico: "", categoriaId: ""
 }
 
-// Administración de productos: tabla, formulario de creación, editar y eliminar.
-// Todo se guarda en productos-service (el backend exige rol ADMINISTRADOR para crear, editar y eliminar).
 const AdminProductos = () => {
     const { datos: listaProductos, cargando, error, recargar } = useCarga(() => listarProductos())
     const { datos: listaCategorias } = useCarga(() => listarCategorias())
@@ -23,16 +20,13 @@ const AdminProductos = () => {
     const [mostrarForm, setMostrarForm] = useState(false)
     const [datos, setDatos] = useState(formularioVacio)
 
-    // Edición: indice del producto que se está editando (null = modal cerrado) y sus datos
     const [indiceEdicion, setIndiceEdicion] = useState(null)
     const [datosEdicion, setDatosEdicion] = useState(formularioVacio)
 
-    // Actualiza el campo que el usuario está escribiendo
     const manejarCambio = (e) => {
         setDatos({ ...datos, [e.target.name]: e.target.value })
     }
 
-    // Valida el formulario y crea el producto nuevo
     const guardarProducto = async (e) => {
         e.preventDefault()
 
@@ -82,13 +76,11 @@ const AdminProductos = () => {
         setDatos(formularioVacio)
         alert("Producto creado correctamente")
 
-        // Avisa si el stock ya está en el nivel crítico (o por debajo)
         if (stockCritico !== null && stock <= stockCritico) {
             alert("Atención: el stock de este producto está en nivel crítico")
         }
     }
 
-    // Abre el cuadro de edición con todos los datos actuales del producto
     const abrirEdicion = (indice) => {
         const p = productos[indice]
         setDatosEdicion({
@@ -109,7 +101,6 @@ const AdminProductos = () => {
         setDatosEdicion({ ...datosEdicion, [e.target.name]: e.target.value })
     }
 
-    // Valida y guarda todos los datos modificados de una vez
     const guardarEdicion = async (e) => {
         e.preventDefault()
 
@@ -157,7 +148,6 @@ const AdminProductos = () => {
         }
     }
 
-    // Elimina un producto (pide confirmación antes)
     const manejarEliminar = async (indice) => {
         const producto = productos[indice]
 

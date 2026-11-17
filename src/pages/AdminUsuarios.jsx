@@ -5,15 +5,13 @@ import { listarUsuarios, crearUsuario, eliminarUsuario } from '../servicios/usua
 import { mensajeError } from '../utils/errores'
 import { useSesion } from '../context/useSesion'
 
-// Administración de usuarios conectada al backend (GET/POST/DELETE /usuarios)
 const AdminUsuarios = () => {
     const { usuario: sesion } = useSesion()
     const [usuarios, setUsuarios] = useState([])
     const [error, setError] = useState('')
     const [mostrarForm, setMostrarForm] = useState(false)
-    const [version, setVersion] = useState(0)   // al cambiarla, se vuelve a pedir la lista
+    const [version, setVersion] = useState(0)   
 
-    // Carga la lista desde el backend al abrir la página y cada vez que cambia "version"
     useEffect(() => {
         let activo = true
 
@@ -35,7 +33,6 @@ const AdminUsuarios = () => {
 
     const recargar = () => setVersion((v) => v + 1)
 
-    // Crea el usuario en el backend. Devuelve true si salió bien (el formulario se limpia solo en ese caso)
     const guardarUsuario = async (datos) => {
         try {
             await crearUsuario(datos)

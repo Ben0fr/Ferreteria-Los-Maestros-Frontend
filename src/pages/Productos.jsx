@@ -2,22 +2,15 @@ import { Link, useSearchParams } from 'react-router-dom'
 import ProductoCard from '../components/molecules/ProductoCard'
 import { obtenerProductos } from '../servicios/tienda'
 import { useCarga } from '../utils/useCarga'
-
-// Catálogo de productos. Si la URL trae ?categoria=..., muestra solo esa categoría
 const Productos = () => {
     const [parametros] = useSearchParams()
     const categoriaFiltro = parametros.get("categoria")
-
-    // Los productos vienen de productos-service
     const { datos, cargando, error } = useCarga(() => obtenerProductos())
     const productos = datos ?? []
-
-    // Lista de productos a mostrar (todos, o solo los de la categoría elegida; se ignoran mayúsculas)
     const productosAMostrar = productos.filter(
         (p) => categoriaFiltro === null || p.categoriaSlug.toLowerCase() === categoriaFiltro.toLowerCase()
     )
 
-    // Texto que indica qué categoría se está viendo
     let tituloCategoria = null
     if (categoriaFiltro !== null && datos !== null) {
         tituloCategoria = productosAMostrar.length > 0

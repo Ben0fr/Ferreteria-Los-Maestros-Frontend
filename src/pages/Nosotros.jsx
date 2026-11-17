@@ -1,6 +1,4 @@
-// Página "Sobre Nosotros": historia, valores y datos de la empresa
 const Nosotros = () => {
-    // Valores de la ferretería (se muestran como tarjetas)
     const valores = [
         { icono: "apreton-manos.svg", titulo: "Atención Personalizada", texto: "Asesoría técnica para seleccionar los materiales adecuados." },
         { icono: "rayo.svg", titulo: "Entrega Rápida", texto: "Despachos a domicilio y retiros prioritarios en tienda." },

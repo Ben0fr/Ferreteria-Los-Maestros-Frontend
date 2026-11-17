@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { categoriasInicio } from '../data/productos'
 
-// Página de inicio: portada, categorías, beneficios y llamado a la acción
 const Home = () => {
     return (
         <>

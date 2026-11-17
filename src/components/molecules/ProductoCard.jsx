@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { useSelectorCantidad } from '../../utils/useSelectorCantidad'
 import { formatearPrecio } from '../../utils/validaciones'
 
-// Tarjeta de un producto en el catálogo
 const ProductoCard = ({ producto }) => {
     const stockDisponible = producto.stock > 0
     const { texto, maximo, enCarrito, manejarCambio, manejarBlur, agregar } = useSelectorCantidad(producto)

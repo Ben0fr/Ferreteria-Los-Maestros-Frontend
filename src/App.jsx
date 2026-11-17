@@ -18,13 +18,17 @@ import DetalleBlog from './pages/DetalleBlog'
 import Admin from './pages/Admin'
 import AdminProductos from './pages/AdminProductos'
 import AdminUsuarios from './pages/AdminUsuarios'
+import AdminOrdenes from './pages/AdminOrdenes'
+import AdminInventario from './pages/AdminInventario'
+import AdminMensajes from './pages/AdminMensajes'
+
+import MisOrdenes from './pages/MisOrdenes'
 
 import Vendedor from './pages/Vendedor'
 import VendedorProductos from './pages/VendedorProductos'
 import VendedorOrdenes from './pages/VendedorOrdenes'
-import { ROL_ADMIN, ROL_VENDEDOR } from './utils/roles'
+import { ROL_ADMIN, ROL_VENDEDOR, ROL_CLIENTE } from './utils/roles'
 
-// Layout de la tienda: menú arriba, contenido en medio (Outlet) y footer abajo
 const PublicLayout = () => {
     return (
         <>
@@ -35,10 +39,6 @@ const PublicLayout = () => {
     )
 }
 
-// Protege un grupo de rutas según el rol del usuario (el rol viene del backend dentro del token):
-// - sin sesión -> lo manda a iniciar sesión
-// - con sesión pero sin el rol permitido -> lo devuelve al inicio
-// IMPORTANTE: esto solo oculta pantallas; la seguridad real la aplica el backend con el JWT.
 const RutaProtegida = ({ roles }) => {
     const { usuario } = useSesion()
 
@@ -53,7 +53,6 @@ const RutaProtegida = ({ roles }) => {
     return <Outlet />
 }
 
-// Define todas las rutas (páginas) del sitio
 const App = () => {
     return (
         <BrowserRouter>
@@ -70,6 +69,11 @@ const App = () => {
                     <Route path="/carrito" element={<Carrito />} />
                     <Route path="/blog" element={<Blog />} />
                     <Route path="/blog/:id" element={<DetalleBlog />} />
+
+                    {/* Historial de compras: solo clientes con sesión */}
+                    <Route element={<RutaProtegida roles={[ROL_CLIENTE]} />}>
+                        <Route path="/mis-ordenes" element={<MisOrdenes />} />
+                    </Route>
                 </Route>
 
                 {/* Panel de administración (acceso total): solo administradores */}
@@ -77,6 +81,9 @@ const App = () => {
                     <Route path="/admin" element={<Admin />} />
                     <Route path="/admin/productos" element={<AdminProductos />} />
                     <Route path="/admin/usuarios" element={<AdminUsuarios />} />
+                    <Route path="/admin/ordenes" element={<AdminOrdenes />} />
+                    <Route path="/admin/inventario" element={<AdminInventario />} />
+                    <Route path="/admin/mensajes" element={<AdminMensajes />} />
                 </Route>
 
                 {/* Panel del vendedor (solo ver productos y órdenes): vendedores y administradores */}

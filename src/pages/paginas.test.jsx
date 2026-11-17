@@ -1,4 +1,3 @@
-// Tests de páginas: Login (validación, cliente y administrador) y Carrito (Vitest)
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -11,13 +10,11 @@ import { agregarAlCarrito } from '../servicios/tienda'
 import { login } from '../servicios/auth'
 import { listarProductos } from '../servicios/productos'
 
-// El backend se simula: estos tests no necesitan que usuarios-service ni productos-service estén encendidos
 vi.mock('../servicios/auth', () => ({ login: vi.fn(), registrar: vi.fn(), perfil: vi.fn() }))
 vi.mock('../servicios/productos', () => ({
-    listarProductos: vi.fn(), obtenerProducto: vi.fn(), descontarStock: vi.fn()
+    listarProductos: vi.fn(), obtenerProducto: vi.fn()
 }))
 
-// Envía el formulario que contiene el botón indicado
 const enviarFormulario = (textoBoton) =>
     fireEvent.submit(screen.getByText(textoBoton).closest('form'))
 
@@ -43,7 +40,7 @@ describe('Login', () => {
         await user.type(screen.getByLabelText('Contraseña'), '1234')
         await user.click(screen.getByRole('button', { name: 'Ingresar' }))
         expect(screen.getByText('El correo debe ser @duoc.cl, @profesor.duoc.cl o @gmail.com')).toBeInTheDocument()
-        expect(login).not.toHaveBeenCalled()   // con datos inválidos ni siquiera se llama al backend
+        expect(login).not.toHaveBeenCalled() 
     })
 
     it('cliente: el backend responde OK, se guarda la sesión y navega al inicio', async () => {
@@ -79,12 +76,10 @@ describe('Login', () => {
 describe('Carrito', () => {
     beforeEach(() => {
         localStorage.clear()
-        // Productos que "responde" productos-service
         listarProductos.mockResolvedValue([
             { id: 1, codigo: 'MAR001', nombre: 'Martillo Carpintero', precio: 6990, stock: 25, icono: 'martillo.svg' },
             { id: 3, codigo: 'CEM003', nombre: 'Saco de Cemento 25kg', precio: 5490, stock: 40, icono: 'ladrillos.svg' }
         ])
-        // Carrito de ejemplo: 2 martillos (6.990 c/u) y 1 saco de cemento (5.490)
         agregarAlCarrito(1)
         agregarAlCarrito(1)
         agregarAlCarrito(3)

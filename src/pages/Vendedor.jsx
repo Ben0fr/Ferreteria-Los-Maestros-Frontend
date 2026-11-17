@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import VendedorSidebar from '../components/organisms/VendedorSidebar'
 import { useSesion } from '../context/useSesion'
 
-// Inicio del panel del vendedor
 const Vendedor = () => {
     const { usuario } = useSesion()
 
